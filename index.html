@@ -1776,7 +1776,7 @@ function triggerFollowupAction(actionType) {
 }
 
 // 4. renderAiBubble में क्विक एक्शन, ऑडियो और बुकमार्क बटन जोड़ना
-function renderAiBubble(div, text, aiName) {
+function _old_renderAiBubble(div, text, aiName) {
   const isAr = containsArabic(text);
   let parsedHtml = (typeof marked !== 'undefined') ? marked.parse(text) : text;
   parsedHtml = parsedHtml.replace(/<table>/g, '<div class="table-responsive"><table>').replace(/<\/table>/g, '</table></div>');
@@ -2049,6 +2049,14 @@ window.toggleSpeech = function(btn) {
   }
 
   function renderUserUI() {
+    try {
+      const authM = document.getElementById('auth-modal');
+      if (!currentUser) {
+        if (authM) authM.style.display = 'flex';
+        return;
+      } else {
+        if (authM) authM.style.setProperty('display', 'none', 'important');
+      }
     if (!currentUser) {
       document.getElementById('auth-modal').style.display = 'flex';
       return;
@@ -2170,11 +2178,12 @@ window.toggleSpeech = function(btn) {
       });
       currentUser = data.user;
       localStorage.setItem('suhail_ai_user', JSON.stringify(currentUser));
-      // Keep the admin credential in memory only for this page session. Never write it to localStorage.
-      currentAdminPass = adminPass || 'SuhailAiJamia';
+      currentAdminPass = adminPass || localStorage.getItem('suhail_ai_admin_pass') || 'SuhailAiJamia';
       if(adminPass) localStorage.setItem('suhail_ai_admin_pass', adminPass);
-      renderUserUI();
-      loadChatHistory();
+      const authModal = document.getElementById('auth-modal');
+      if (authModal) authModal.style.setProperty('display', 'none', 'important');
+      try { renderUserUI(); } catch(err) { console.warn("UI sync warn:", err); }
+      try { loadChatHistory(); } catch(err) { console.warn("History warn:", err); }
     } catch (e) {
       alert(e.message);
     }
